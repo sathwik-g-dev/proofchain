@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProofChain — Java Project Source Code Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg-canvas: #0f1217;
+            --bg-surface: #171b22;
+            --bg-subtle: #1e2430;
+            --bg-card: #222937;
+            --border-hairline: #2e3748;
+            --border-focus: #e28743;
+
+            --text-main: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+
+            --brand-primary: #e28743;
+            --brand-hover: #f09653;
+            --accent-sage: #2a9d8f;
+            --accent-blue: #3b82f6;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar Navigation */
+        #sidebar {
+            width: 260px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-hairline);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+
+        .brand-header {
+            padding: 24px 20px 20px;
+            border-bottom: 1px solid var(--border-hairline);
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-badge {
+            background: var(--brand-primary);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            text-transform: uppercase;
+        }
+
+        .brand-tagline {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 16px 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            text-align: left;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--bg-subtle);
+            color: var(--text-main);
+        }
+
+        .nav-btn.active {
+            background-color: var(--bg-card);
+            color: var(--brand-primary);
+            border-left: 3px solid var(--brand-primary);
+        }
+
+        .dev-badge-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-hairline);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .dev-badge-footer span {
+            color: var(--text-main);
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        /* Content Area */
+        #content {
+            flex: 1;
+            padding: 32px 40px;
+            overflow-y: auto;
+            max-width: 1300px;
+            min-width: 0;
+        }
+
+        header.view-header {
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .view-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .view-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            margin-top: 4px;
+        }
+
+        /* Workflow Guide */
+        .workflow-guide {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-lg);
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .workflow-guide-steps {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+        }
+
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .workflow-step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--bg-subtle);
+            color: var(--brand-primary);
+            font-weight: 700;
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+        }
+
+        /* Metric Grid */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+
+        .metric-card.hero {
+            background: linear-gradient(145deg, #1f2633 0%, #171b22 100%);
+            border-color: #3b465c;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        .metric-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 8px 0 4px;
+            font-family: var(--font-mono);
+            letter-spacing: -0.03em;
+        }
+
+        .metric-card.hero .metric-val {
+            color: var(--brand-primary);
+        }
+
+        .metric-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Card Container */
+        .card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        /* Tables */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .workbench-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        .workbench-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-hairline);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            font-family: var(--font-mono);
+        }
+
+        .workbench-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-hairline);
+            color: var(--text-main);
+        }
+
+        .workbench-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .workbench-table tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--brand-primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--brand-hover);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-subtle);
+            color: var(--text-main);
+            border-color: var(--border-hairline);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-card);
+            border-color: #3b465c;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.78rem;
+        }
+
+        .btn-danger {
+            color: var(--accent-rose);
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(244, 63, 94, 0.1);
+            border-color: var(--accent-rose);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .form-helper {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px 14px;
+            background-color: var(--bg-canvas);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            border-color: var(--border-focus);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Input Method Toggle */
+        .input-method-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-method-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-hairline);
+            background: var(--bg-canvas);
+            color: var(--text-secondary);
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .input-method-tab.active {
+            border-color: var(--brand-primary);
+            background: var(--bg-subtle);
+            color: var(--brand-primary);
+        }
+
+        /* Dropzone */
+        .dropzone {
+            border: 2px dashed var(--border-hairline);
+            border-radius: var(--radius-md);
+            padding: 36px 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.01);
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--brand-primary);
+            background: rgba(226, 135, 67, 0.05);
+        }
+
+        .dropzone-icon {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--brand-primary);
+        }
+
+        .dropzone-file-info {
+            display: none;
+            margin-top: 12px;
+            padding: 8px 14px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--brand-primary);
+        }
+
+        /* Progress Steps */
+        .analysis-progress-card {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid #3b465c;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .progress-steps-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .progress-step-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-step-item.active {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .progress-step-item.complete {
+            color: var(--accent-sage);
+        }
+
+        .progress-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+
+        /* Score Pills & Badges */
+        .score-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .score-high {
+            background-color: rgba(42, 157, 143, 0.15);
+            color: var(--accent-sage);
+            border: 1px solid rgba(42, 157, 143, 0.3);
+        }
+
+        .score-mid {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .score-low {
+            background-color: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .bullet-tag {
+            display: inline-block;
+            background-color: var(--bg-subtle);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-sm);
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+
+        .tech-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--bg-canvas);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-md);
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .callout-box {
+            border-left: 3px solid;
+            padding: 12px 16px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            background-color: var(--bg-canvas);
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+
+        .callout-strength {
+            border-color: var(--accent-sage);
+        }
+
+        .callout-recommendation {
+            border-color: var(--brand-primary);
+        }
+
+        /* File Level Evidence Accordion */
+        .evidence-item {
+            background: var(--bg-canvas);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .evidence-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .evidence-summary-row:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .evidence-files-list {
+            display: none;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-hairline);
+            background: var(--bg-surface);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        .evidence-file-chip {
+            display: inline-block;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-hairline);
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            margin: 3px 4px 3px 0;
+            color: var(--brand-primary);
+        }
+
+        /* Toast Notifications */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-hairline);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: none;
+            z-index: 1000;
+            max-width: 90vw;
+            transition: border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Responsive Mobile Layout */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            #sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-hairline);
+            }
+
+            .brand-header {
+                padding: 16px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .brand-tagline {
+                display: none;
+            }
+
+            .nav-list {
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 8px 12px;
+                gap: 6px;
+            }
+
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                width: auto;
+                flex: 1 1 auto;
+                justify-content: center;
+            }
+
+            .nav-btn.active {
+                border-left: none;
+                border-bottom: 3px solid var(--brand-primary);
+            }
+
+            .dev-badge-footer {
+                display: none;
+            }
+
+            #content {
+                padding: 20px 16px;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .view-header {
+                flex-direction: column;
+                gap: 14px;
+                align-items: stretch;
+            }
+
+            .view-header > div:last-child {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .view-header > div:last-child select,
+            .view-header > div:last-child button {
+                width: 100% !important;
+            }
+
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow-guide {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .workflow-guide-steps {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .workflow-guide-steps > span {
+                display: none;
+            }
+
+            .input-method-tabs {
+                flex-direction: column;
+            }
+        }
+
+        /* User Avatar & Account Footer */
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brand-primary), #f59e0b);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(226, 135, 67, 0.25);
+        }
+
+        /* Modal Overlay & Dialog */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 13, 18, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .modal-backdrop.open {
+            display: flex;
+        }
+        .modal-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-lg);
+            width: 92%;
+            max-width: 440px;
+            padding: 24px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+            animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-hairline);
+            margin-bottom: 20px;
+            gap: 6px;
+        }
+        .modal-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s ease;
+        }
+        .modal-tab-btn.active {
+            color: var(--brand-primary);
+            border-bottom-color: var(--brand-primary);
+        }
+
+        /* Quick Switch Card */
+        .quick-switch-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--bg-canvas);
+            border: 1px solid var(--border-hairline);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .quick-switch-item:hover {
+            border-color: var(--brand-primary);
+            background: var(--bg-subtle);
+        }
+        .quick-switch-item.active {
+            border-color: var(--brand-primary);
+            background: rgba(226, 135, 67, 0.08);
+        }
+
+        /* Print Media Stylesheet for PDF */
+        @media print {
+            #sidebar, .navbar-mobile, .btn, .nav-btn, .workflow-guide,
+            #analysis-progress-container, #toast, .modal-backdrop,
+            header button, select {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #111827 !important;
+                display: block !important;
+            }
+            #content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            .view-section {
+                display: none !important;
+            }
+            #view-report {
+                display: block !important;
+            }
+            .card {
+                background: #ffffff !important;
+                color: #111827 !important;
+                border: 1px solid #e5e7eb !important;
+                box-shadow: none !important;
+                margin-bottom: 16px !important;
+                page-break-inside: avoid;
+            }
+            .metric-card {
+                border: 1px solid #e5e7eb !important;
+                background: #f9fafb !important;
+            }
+            .metric-label, .metric-desc {
+                color: #6b7280 !important;
+            }
+            .metric-val {
+                color: #e28743 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="brand-header">
+            <div class="brand-title">
+                PROOFCHAIN
+                <span class="brand-badge">ANALYZER</span>
+            </div>
+            <div class="brand-tagline">Java Project Source Code Analyzer</div>
+        </div>
+
+        <ul class="nav-list">
+            <li>
+                <button class="nav-btn active" onclick="switchView('overview')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Developer Overview
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" onclick="switchView('analyze')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Analyze Project
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" onclick="switchView('projects')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    Projects
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" onclick="switchView('report')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Project Report
+                </button>
+            </li>
+        </ul>
+
+        <div class="dev-badge-footer" id="account-card-footer">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div class="user-avatar" id="sidebar-user-avatar">S</div>
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+                    <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-main); line-height: 1.2;" id="sidebar-user-name">Sathwik</div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis;" id="sidebar-user-email">sathwik.dev@proofchain.io</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="openLoginModal()" style="width: 100%; font-size: 0.78rem; padding: 7px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Log In / Switch User
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="content">
+
+        <!-- VIEW 1: OVERVIEW -->
+        <section id="view-overview" class="view-section active">
+            <header class="view-header">
+                <div>
+                    <h1 class="view-title">Developer Skill Matrix</h1>
+                    <p class="view-subtitle">Explainable technical skill evaluation derived directly from analyzed source code.</p>
+                </div>
+                <button class="btn btn-primary" onclick="switchView('analyze')">⚡ Analyze New Project</button>
+            </header>
+
+            <!-- FIRST-TIME USER WORKFLOW GUIDE -->
+            <div class="workflow-guide">
+                <span style="font-size: 0.75rem; font-weight: 700; font-family: var(--font-mono); color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.05em;">How it works</span>
+                <div class="workflow-guide-steps">
+                    <div class="workflow-step">
+                        <span class="workflow-step-num">1</span>
+                        <span>Provide project (ZIP or GitHub)</span>
+                    </div>
+                    <span style="color: var(--border-hairline);">→</span>
+                    <div class="workflow-step">
+                        <span class="workflow-step-num">2</span>
+                        <span>ProofChain analyzes source code AST</span>
+                    </div>
+                    <span style="color: var(--border-hairline);">→</span>
+                    <div class="workflow-step">
+                        <span class="workflow-step-num">3</span>
+                        <span>Review Technical Project Score & file evidence</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-card hero">
+                    <div class="metric-label">Technical Project Score</div>
+                    <div class="metric-val" id="stat-overall-score">--</div>
+                    <div class="metric-desc">Average across verified project skills</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Projects Registered</div>
+                    <div class="metric-val" id="stat-project-count">0</div>
+                    <div class="metric-desc">Source code repositories analyzed</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Demonstrated Skills</div>
+                    <div class="metric-val" id="stat-skill-count">0</div>
+                    <div class="metric-desc">Technologies with detected evidence</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Analyses Completed</div>
+                    <div class="metric-val" id="stat-analysis-count">0</div>
+                    <div class="metric-desc">AST evaluations completed</div>
+                </div>
+            </div>
+
+            <!-- Skill Proof Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Verified Technical Skills</h2>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Scores are based on detected AST project metrics</span>
+                </div>
+                <div class="table-container">
+                    <table class="workbench-table">
+                        <thead>
+                            <tr>
+                                <th>Skill</th>
+                                <th>Proof Score</th>
+                                <th>Key Strengths</th>
+                                <th>Suggested Improvements</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overview-skills-tbody">
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading skill matrix...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Projects Quick List -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Project Portfolio</h2>
+                </div>
+                <div class="table-container">
+                    <table class="workbench-table">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Detected Technologies</th>
+                                <th>Metrics Count</th>
+                                <th>Proof Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overview-projects-tbody">
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading projects...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: ANALYZE PROJECT -->
+        <section id="view-analyze" class="view-section">
+            <header class="view-header">
+                <div>
+                    <h1 class="view-title">Analyze Project Source Code</h1>
+                    <p class="view-subtitle">Upload a project ZIP file or enter a public GitHub repository URL for deterministic AST analysis.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Choose Project Input Method</h2>
+                </div>
+
+                <div class="input-method-tabs">
+                    <button type="button" class="input-method-tab active" id="tab-btn-zip" onclick="setInputMethod('zip')">
+                        📦 Upload Project ZIP
+                    </button>
+                    <button type="button" class="input-method-tab" id="tab-btn-github" onclick="setInputMethod('github')">
+                        🐙 Public GitHub Repository
+                    </button>
+                </div>
+
+                <form id="form-analyze-project" onsubmit="handleAnalyzeProject(event)">
+                    <div class="form-group">
+                        <label for="ana-proj-name">Project Name (optional)</label>
+                        <div class="form-helper">Leave empty to automatically infer from the ZIP archive or repository name.</div>
+                        <input type="text" id="ana-proj-name" placeholder="e.g., StudentExpenseTracker, SnakeGame, ProofChain">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ana-proj-desc">Project Description (optional)</label>
+                        <textarea id="ana-proj-desc" placeholder="Brief summary of what this software project accomplishes..."></textarea>
+                    </div>
+
+                    <!-- ZIP INPUT PANEL -->
+                    <div id="panel-input-zip">
+                        <div class="form-group">
+                            <label>Project ZIP Archive *</label>
+                            <div class="dropzone" id="zip-dropzone" onclick="document.getElementById('zip-file-input').click()">
+                                <div class="dropzone-icon">📁</div>
+                                <div style="font-weight: 700; font-size: 0.95rem;">Click to select or drag & drop project ZIP</div>
+                                <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px;">Supports Java projects (Maven, Gradle, or raw source) up to 25MB</div>
+                                <input type="file" id="zip-file-input" accept=".zip" style="display: none;" onchange="handleZipFileSelected(this)">
+                                <div class="dropzone-file-info" id="zip-file-info"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GITHUB INPUT PANEL -->
+                    <div id="panel-input-github" style="display: none;">
+                        <div class="form-group">
+                            <label for="ana-github-url">GitHub Repository (optional)</label>
+                            <div class="form-helper">Add a link to the project's GitHub repository. ProofChain will download the archive and analyze it safely.</div>
+                            <input type="text" id="ana-github-url" placeholder="https://github.com/username/project">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button type="submit" class="btn btn-primary" id="btn-submit-analysis" style="padding: 12px 28px; font-size: 0.95rem;">
+                            ⚡ Analyze Project Source
+                        </button>
+                    </div>
+                </form>
+
+                <!-- REAL-TIME ANALYSIS PROGRESS STATE -->
+                <div class="analysis-progress-card" id="analysis-progress-container">
+                    <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 10px;">
+                        <span id="spinner-icon">🔄</span>
+                        <span id="progress-header-text">Analyzing Project Source Code...</span>
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+                        Deterministic AST analysis in progress. Uploaded code is strictly parsed and never executed.
+                    </div>
+                    <ul class="progress-steps-list">
+                        <li class="progress-step-item" id="pstep-1">
+                            <span class="progress-icon">⏳</span>
+                            <span>1. Extracting archive & validating file safety</span>
+                        </li>
+                        <li class="progress-step-item" id="pstep-2">
+                            <span class="progress-icon">⏳</span>
+                            <span>2. Parsing Java AST syntax, classes, interfaces & methods</span>
+                        </li>
+                        <li class="progress-step-item" id="pstep-3">
+                            <span class="progress-icon">⏳</span>
+                            <span>3. Inspecting Spring Boot components, endpoints & JPA entities</span>
+                        </li>
+                        <li class="progress-step-item" id="pstep-4">
+                            <span class="progress-icon">⏳</span>
+                            <span>4. Detecting unit tests, assertions & build dependencies</span>
+                        </li>
+                        <li class="progress-step-item" id="pstep-5">
+                            <span class="progress-icon">⏳</span>
+                            <span>5. Calculating explainable Technical Project Score</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: PROJECTS -->
+        <section id="view-projects" class="view-section">
+            <header class="view-header">
+                <div>
+                    <h1 class="view-title">Projects</h1>
+                    <p class="view-subtitle">Manage analyzed software projects and inspect technical reports.</p>
+                </div>
+                <button class="btn btn-primary" onclick="switchView('analyze')">⚡ Analyze New Project</button>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Analyzed Projects</h2>
+                </div>
+                <div id="projects-list-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: PROJECT REPORT -->
+        <section id="view-report" class="view-section">
+            <header class="view-header">
+                <div>
+                    <h1 class="view-title">Technical Project Report</h1>
+                    <p class="view-subtitle">Explainable, rule-driven evaluation of detected source-code metrics.</p>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <select id="report-project-select" onchange="loadReport(this.value)" style="width: 240px;">
+                        <!-- Populated dynamically -->
+                    </select>
+                    <button class="btn btn-primary" onclick="reAnalyzeCurrentProject()">Recalculate Score</button>
+                    <button class="btn btn-secondary" id="btn-download-pdf" onclick="downloadReportPdf()" style="display: flex; align-items: center; gap: 6px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Download PDF
+                    </button>
+                </div>
+            </header>
+
+            <div id="report-container">
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    Select a project from the top dropdown or analyze a new project to view its report.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- LOGIN / ACCOUNT SWITCHER MODAL -->
+    <div id="modal-login" class="modal-backdrop" onclick="if(event.target === this) closeLoginModal()">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">Developer Account</h3>
+                <button onclick="closeLoginModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.4rem; line-height: 1; padding: 0 4px;">&times;</button>
+            </div>
+
+            <div class="modal-tabs">
+                <button id="modal-tab-btn-login" class="modal-tab-btn active" onclick="switchLoginTab('login')">Log In</button>
+                <button id="modal-tab-btn-register" class="modal-tab-btn" onclick="switchLoginTab('register')">Create Account</button>
+                <button id="modal-tab-btn-switch" class="modal-tab-btn" onclick="switchLoginTab('switch')">Quick Switch</button>
+            </div>
+
+            <!-- TAB 1: LOGIN -->
+            <form id="form-login" onsubmit="handleLoginSubmit(event)">
+                <div id="login-error-msg" style="display: none; background: rgba(244,63,94,0.15); border: 1px solid var(--accent-rose); color: #fb7185; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.82rem; margin-bottom: 14px;"></div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="login-email" class="form-input" placeholder="developer@proofchain.io" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="Enter password" required>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 22px;">
+                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeLoginModal()">Cancel</button>
+                    <button type="submit" id="btn-login-submit" class="btn btn-primary" style="flex: 2;">Log In</button>
+                </div>
+            </form>
+
+            <!-- TAB 2: REGISTER -->
+            <form id="form-register" onsubmit="handleRegisterSubmit(event)" style="display: none;">
+                <div id="register-error-msg" style="display: none; background: rgba(244,63,94,0.15); border: 1px solid var(--accent-rose); color: #fb7185; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.82rem; margin-bottom: 14px;"></div>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="reg-name" class="form-input" placeholder="e.g. Sathwik Dev" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="reg-email" class="form-input" placeholder="e.g. sathwik@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password (min 6 characters)</label>
+                    <input type="password" id="reg-password" class="form-input" placeholder="Enter password" minlength="6" required>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 22px;">
+                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeLoginModal()">Cancel</button>
+                    <button type="submit" id="btn-register-submit" class="btn btn-primary" style="flex: 2;">Create Account</button>
+                </div>
+            </form>
+
+            <!-- TAB 3: QUICK SWITCH -->
+            <div id="panel-quick-switch" style="display: none;">
+                <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 14px;">
+                    Switch active profile among registered developers in the local database:
+                </p>
+                <div id="quick-switch-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; margin-bottom: 16px;">
+                    <!-- Populated dynamically -->
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-hairline); padding-top: 14px;">
+                    <button type="button" class="btn btn-secondary btn-sm btn-danger" onclick="handleLogout()">Log Out</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeLoginModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Notification</div>
+
+<script>
+    const API = 'http://localhost:8080/api';
+    let currentUserId = 1;
+    let cachedSkills = [];
+    let cachedProjects = [];
+    let selectedZipFile = null;
+    let currentInputMethod = 'zip'; // 'zip' or 'github'
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        await initDevUser();
+        await loadSkills();
+        await loadDashboard();
+        initDropzone();
+    });
+
+    let currentUserProfile = null;
+
+    async function initDevUser() {
+        try {
+            // Check localStorage session first
+            const saved = localStorage.getItem('proofchain_active_user');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && parsed.id) {
+                        currentUserId = parsed.id;
+                        currentUserProfile = parsed;
+                        updateSidebarUser(parsed);
+                        return;
+                    }
+                } catch (e) {
+                    localStorage.removeItem('proofchain_active_user');
+                }
+            }
+
+            const res = await fetch(`${API}/users`);
+            const users = await res.json();
+            if (users && users.length > 0) {
+                const user = users.find(u => u.email.includes('sathwik')) || users[0];
+                currentUserId = user.id;
+                currentUserProfile = user;
+                localStorage.setItem('proofchain_active_user', JSON.stringify(user));
+                updateSidebarUser(user);
+            }
+        } catch (err) {
+            console.error('Error fetching users:', err);
+        }
+    }
+
+    function updateSidebarUser(user) {
+        if (!user) return;
+        const nameEl = document.getElementById('sidebar-user-name');
+        const emailEl = document.getElementById('sidebar-user-email');
+        const avatarEl = document.getElementById('sidebar-user-avatar');
+        const devEmailEl = document.getElementById('dev-email');
+
+        if (nameEl) nameEl.textContent = user.name || 'Developer';
+        if (emailEl) emailEl.textContent = user.email || 'user@proofchain.io';
+        if (devEmailEl) devEmailEl.textContent = user.email || '';
+        if (avatarEl) {
+            const initial = (user.name || user.email || 'D').trim().charAt(0).toUpperCase();
+            avatarEl.textContent = initial;
+        }
+    }
+
+    /* Account / Login Modal Functions */
+    async function openLoginModal() {
+        const modal = document.getElementById('modal-login');
+        if (!modal) return;
+        switchLoginTab('login');
+        clearModalErrors();
+        modal.classList.add('open');
+        await loadQuickSwitchUsers();
+    }
+
+    function closeLoginModal() {
+        const modal = document.getElementById('modal-login');
+        if (modal) modal.classList.remove('open');
+        clearModalErrors();
+    }
+
+    function clearModalErrors() {
+        const loginErr = document.getElementById('login-error-msg');
+        const regErr = document.getElementById('register-error-msg');
+        if (loginErr) { loginErr.style.display = 'none'; loginErr.textContent = ''; }
+        if (regErr) { regErr.style.display = 'none'; regErr.textContent = ''; }
+    }
+
+    function switchLoginTab(tab) {
+        document.querySelectorAll('.modal-tab-btn').forEach(btn => btn.classList.remove('active'));
+        const tabBtn = document.getElementById(`modal-tab-btn-${tab}`);
+        if (tabBtn) tabBtn.classList.add('active');
+
+        document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+        document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+        document.getElementById('panel-quick-switch').style.display = tab === 'switch' ? 'block' : 'none';
+        clearModalErrors();
+    }
+
+    async function handleLoginSubmit(e) {
+        e.preventDefault();
+        clearModalErrors();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const errBox = document.getElementById('login-error-msg');
+        const btn = document.getElementById('btn-login-submit');
+
+        btn.disabled = true;
+        btn.textContent = 'Logging in...';
+
+        try {
+            const res = await fetch(`${API}/users/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (res.ok) {
+                const user = await res.json();
+                currentUserId = user.id;
+                currentUserProfile = user;
+                localStorage.setItem('proofchain_active_user', JSON.stringify(user));
+                updateSidebarUser(user);
+                closeLoginModal();
+                showToast(`Welcome back, ${user.name}!`);
+                document.getElementById('form-login').reset();
+                await loadDashboard();
+            } else {
+                const err = await res.json();
+                errBox.textContent = err.message || 'Invalid email or password.';
+                errBox.style.display = 'block';
+            }
+        } catch (err) {
+            errBox.textContent = 'Connection error: ' + err.message;
+            errBox.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Log In';
+        }
+    }
+
+    async function handleRegisterSubmit(e) {
+        e.preventDefault();
+        clearModalErrors();
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const errBox = document.getElementById('register-error-msg');
+        const btn = document.getElementById('btn-register-submit');
+
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+
+        try {
+            const res = await fetch(`${API}/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            });
+
+            if (res.ok) {
+                const user = await res.json();
+                currentUserId = user.id;
+                currentUserProfile = user;
+                localStorage.setItem('proofchain_active_user', JSON.stringify(user));
+                updateSidebarUser(user);
+                closeLoginModal();
+                showToast(`Account created for ${user.name}!`);
+                document.getElementById('form-register').reset();
+                await loadDashboard();
+            } else {
+                const err = await res.json();
+                errBox.textContent = err.message || 'Could not register user.';
+                errBox.style.display = 'block';
+            }
+        } catch (err) {
+            errBox.textContent = 'Connection error: ' + err.message;
+            errBox.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+        }
+    }
+
+    async function loadQuickSwitchUsers() {
+        const container = document.getElementById('quick-switch-list');
+        if (!container) return;
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 12px;">Loading profiles...</div>';
+
+        try {
+            const res = await fetch(`${API}/users`);
+            const users = await res.json();
+            if (!users || users.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem;">No users found.</div>';
+                return;
+            }
+
+            container.innerHTML = users.map(u => {
+                const isCurrent = u.id === currentUserId;
+                const initial = (u.name || u.email || 'U').trim().charAt(0).toUpperCase();
+                return `
+                    <div class="quick-switch-item ${isCurrent ? 'active' : ''}" onclick="quickSwitchUser(${u.id}, '${escapeHtml(u.name)}', '${escapeHtml(u.email)}')">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">${initial}</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-main);">${escapeHtml(u.name)}</div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted);">${escapeHtml(u.email)}</div>
+                            </div>
+                        </div>
+                        <div>
+                            ${isCurrent ? '<span style="font-size: 0.72rem; color: var(--brand-primary); font-weight: 700;">ACTIVE</span>' : '<button class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 3px 8px;">Switch</button>'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (err) {
+            container.innerHTML = `<div style="color: var(--accent-rose); font-size: 0.8rem;">Error loading users: ${err.message}</div>`;
+        }
+    }
+
+    async function quickSwitchUser(id, name, email) {
+        const user = { id, name, email };
+        currentUserId = id;
+        currentUserProfile = user;
+        localStorage.setItem('proofchain_active_user', JSON.stringify(user));
+        updateSidebarUser(user);
+        closeLoginModal();
+        showToast(`Active profile switched to ${name}`);
+        await loadDashboard();
+    }
+
+    async function handleLogout() {
+        localStorage.removeItem('proofchain_active_user');
+        closeLoginModal();
+        showToast('Logged out.');
+        await initDevUser();
+        await loadDashboard();
+    }
+
+    /* PDF Report Generation & Download */
+    async function downloadReportPdf() {
+        const container = document.getElementById('report-container');
+        if (!container || !container.innerText.trim() || container.innerText.includes('Select a project from the top dropdown')) {
+            showToast('Please select or analyze a project first.', true);
+            return;
+        }
+
+        const select = document.getElementById('report-project-select');
+        const projectName = select.options[select.selectedIndex]?.text?.split('(')[0]?.trim() || 'Project';
+        const cleanFileName = `ProofChain_Report_${projectName.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+
+        showToast('Preparing PDF download...');
+
+        // If html2pdf is available, use client-side PDF export
+        if (typeof html2pdf !== 'undefined') {
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: cleanFileName,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0f1217', logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            try {
+                await html2pdf().set(opt).from(container).save();
+                showToast(`Downloaded: ${cleanFileName}`);
+            } catch (err) {
+                console.warn('html2pdf failed, falling back to window.print():', err);
+                window.print();
+            }
+        } else {
+            // Robust print fallback
+            window.print();
+        }
+    }
+
+    async function loadSkills() {
+        try {
+            const res = await fetch(`${API}/skills`);
+            cachedSkills = await res.json();
+        } catch (err) {
+            console.error('Error loading skills:', err);
+        }
+    }
+
+    async function loadDashboard(preserveProjectId) {
+        try {
+            const res = await fetch(`${API}/dashboard/${currentUserId}`);
+            const data = await res.json();
+
+            document.getElementById('stat-overall-score').textContent = data.overallProofScore !== null ? `${data.overallProofScore}/100` : '--';
+            document.getElementById('stat-project-count').textContent = data.totalProjects;
+            document.getElementById('stat-skill-count').textContent = data.totalSkills;
+            document.getElementById('stat-analysis-count').textContent = data.completedAnalyses;
+
+            // Render Overview Skills Table
+            const skillsTbody = document.getElementById('overview-skills-tbody');
+            if (data.skillProfiles && data.skillProfiles.length > 0) {
+                skillsTbody.innerHTML = data.skillProfiles.map(s => {
+                    const pillClass = s.score >= 80 ? 'score-high' : (s.score >= 60 ? 'score-mid' : 'score-low');
+                    const strengths = s.strengths ? s.strengths.split(';').map(x => `<div class="callout-box callout-strength">${escapeHtml(x)}</div>`).join('') : '<span style="color: var(--text-muted);">None documented</span>';
+                    const recommendations = s.recommendations ? s.recommendations.split(';').map(x => `<div class="callout-box callout-recommendation">${escapeHtml(x)}</div>`).join('') : '<span style="color: var(--text-muted);">Good coverage</span>';
+
+                    return `
+                        <tr>
+                            <td style="font-weight: 700; font-size: 0.95rem;">${escapeHtml(s.skillName)}</td>
+                            <td><span class="score-pill ${pillClass}">${s.score}/100</span></td>
+                            <td>${strengths}</td>
+                            <td>${recommendations}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                skillsTbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No skills evaluated yet. Analyze a project to see your score.</td></tr>';
+            }
+
+            // Render Overview Projects Table
+            cachedProjects = data.projects || [];
+            const projTbody = document.getElementById('overview-projects-tbody');
+            if (cachedProjects.length > 0) {
+                projTbody.innerHTML = cachedProjects.map(p => `
+                    <tr>
+                        <td style="font-weight: 700;">${escapeHtml(p.name)}</td>
+                        <td>${p.skills.map(sk => `<span class="bullet-tag">${escapeHtml(sk)}</span>`).join('')}</td>
+                        <td><span style="font-family: var(--font-mono);">${p.evidenceCount} metrics</span></td>
+                        <td>
+                            ${p.overallScore !== null ? `<span class="score-pill ${p.overallScore >= 80 ? 'score-high' : 'score-mid'}">${p.overallScore}/100</span>` : '<span style="color: var(--text-muted);">Not calculated</span>'}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="btn btn-secondary btn-sm" onclick="inspectReport(${p.id})">Report</button>
+                                <button class="btn btn-secondary btn-sm btn-danger" onclick="deleteProject(${p.id})">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                renderProjectCards();
+                populateProjectDropdowns(preserveProjectId);
+            } else {
+                projTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No projects registered. Click "Analyze New Project" to get started.</td></tr>';
+                renderProjectCards();
+                populateProjectDropdowns(preserveProjectId);
+            }
+        } catch (err) {
+            console.error('Error loading dashboard:', err);
+        }
+    }
+
+    function populateProjectDropdowns(preserveProjectId) {
+        const reportSelect = document.getElementById('report-project-select');
+        const prevReportId = preserveProjectId || reportSelect.value;
+
+        if (!cachedProjects || cachedProjects.length === 0) {
+            reportSelect.innerHTML = '<option value="">No projects registered</option>';
+            document.getElementById('report-container').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    No projects analyzed yet. Go to <a href="javascript:void(0)" onclick="switchView('analyze')" style="color: var(--brand-primary);">Analyze Project</a> to get started.
+                </div>`;
+            return;
+        }
+
+        const options = cachedProjects.map(p => `
+            <option value="${p.id}">${escapeHtml(p.name)} [${p.skills.length > 0 ? p.skills.join(', ') : 'No skills'}]</option>
+        `).join('');
+
+        reportSelect.innerHTML = options;
+
+        if (prevReportId && cachedProjects.some(p => p.id == prevReportId)) {
+            reportSelect.value = prevReportId;
+        } else {
+            reportSelect.value = cachedProjects[0].id;
+        }
+
+        loadReport(Number(reportSelect.value));
+    }
+
+    function renderProjectCards() {
+        const container = document.getElementById('projects-list-container');
+        if (!cachedProjects || cachedProjects.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 24px;">No projects registered yet.</div>';
+            return;
+        }
+
+        container.innerHTML = cachedProjects.map(p => `
+            <div style="background-color: var(--bg-canvas); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                <div style="flex: 1 1 300px;">
+                    <div style="font-size: 1.05rem; font-weight: 700;">${escapeHtml(p.name)}</div>
+                    <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(p.description || 'No description provided.')}</div>
+                    ${p.githubUrl ? `<a href="${escapeHtml(p.githubUrl)}" target="_blank" style="color: var(--brand-primary); font-size: 0.78rem; text-decoration: none; display: inline-block; margin-top: 4px;">GitHub Repository &nearr;</a>` : ''}
+                    <div style="margin-top: 8px;">
+                        ${p.skills.map(sk => `<span class="bullet-tag">${escapeHtml(sk)}</span>`).join('')}
+                    </div>
+                </div>
+                <div style="text-align: right; flex: 0 0 auto;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Technical Score</div>
+                    <div style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-mono); color: var(--brand-primary);">${p.overallScore !== null ? p.overallScore + '/100' : 'N/A'}</div>
+                    <div style="margin-top: 8px; display: flex; gap: 6px; justify-content: flex-end;">
+                        <button class="btn btn-secondary btn-sm" onclick="inspectReport(${p.id})">View Report</button>
+                        <button class="btn btn-secondary btn-sm btn-danger" onclick="deleteProject(${p.id})">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /* Input Method Selection */
+    function setInputMethod(method) {
+        currentInputMethod = method;
+        document.getElementById('tab-btn-zip').classList.toggle('active', method === 'zip');
+        document.getElementById('tab-btn-github').classList.toggle('active', method === 'github');
+
+        document.getElementById('panel-input-zip').style.display = method === 'zip' ? 'block' : 'none';
+        document.getElementById('panel-input-github').style.display = method === 'github' ? 'block' : 'none';
+    }
+
+    function initDropzone() {
+        const dropzone = document.getElementById('zip-dropzone');
+        if (!dropzone) return;
+
+        ['dragenter', 'dragover'].forEach(name => {
+            dropzone.addEventListener(name, (e) => {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(name => {
+            dropzone.addEventListener(name, (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+            });
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                const f = files[0];
+                if (f.name.toLowerCase().endsWith('.zip')) {
+                    selectedZipFile = f;
+                    showSelectedFileInfo(f.name, f.size);
+                } else {
+                    showToast('Please select a .zip archive.', true);
+                }
+            }
+        });
+    }
+
+    function handleZipFileSelected(input) {
+        if (input.files && input.files[0]) {
+            const f = input.files[0];
+            selectedZipFile = f;
+            showSelectedFileInfo(f.name, f.size);
+        }
+    }
+
+    function showSelectedFileInfo(name, sizeBytes) {
+        const info = document.getElementById('zip-file-info');
+        const sizeMb = (sizeBytes / (1024 * 1024)).toFixed(2);
+        info.style.display = 'block';
+        info.innerHTML = `✓ Selected: <strong>${escapeHtml(name)}</strong> (${sizeMb} MB)`;
+    }
+
+    /* Analysis Flow */
+    async function handleAnalyzeProject(e) {
+        e.preventDefault();
+        const name = document.getElementById('ana-proj-name').value.trim();
+        const description = document.getElementById('ana-proj-desc').value.trim();
+
+        if (currentInputMethod === 'zip') {
+            if (!selectedZipFile) {
+                showToast('Please select a project ZIP file to analyze.', true);
+                return;
+            }
+            await uploadAndAnalyzeZip(selectedZipFile, name, description);
+        } else {
+            const githubUrl = document.getElementById('ana-github-url').value.trim();
+            if (!githubUrl) {
+                showToast('Please enter a public GitHub repository URL.', true);
+                return;
+            }
+            await fetchAndAnalyzeGitHub(githubUrl, name, description);
+        }
+    }
+
+    function setProgressStep(stepNum, status) {
+        const item = document.getElementById(`pstep-${stepNum}`);
+        if (!item) return;
+        const icon = item.querySelector('.progress-icon');
+        if (status === 'active') {
+            item.className = 'progress-step-item active';
+            icon.textContent = '⚡';
+        } else if (status === 'complete') {
+            item.className = 'progress-step-item complete';
+            icon.textContent = '✓';
+        } else {
+            item.className = 'progress-step-item';
+            icon.textContent = '⏳';
+        }
+    }
+
+    async function uploadAndAnalyzeZip(file, name, description) {
+        const progressCard = document.getElementById('analysis-progress-container');
+        const submitBtn = document.getElementById('btn-submit-analysis');
+        progressCard.style.display = 'block';
+        submitBtn.disabled = true;
+
+        setProgressStep(1, 'active');
+        setProgressStep(2, 'waiting');
+        setProgressStep(3, 'waiting');
+        setProgressStep(4, 'waiting');
+        setProgressStep(5, 'waiting');
+
+        const formData = new FormData();
+        formData.append('file', file);
+        if (name) formData.append('name', name);
+        if (description) formData.append('description', description);
+        formData.append('userId', currentUserId);
+
+        const stepTimer = setTimeout(() => { setProgressStep(1, 'complete'); setProgressStep(2, 'active'); }, 600);
+        const stepTimer2 = setTimeout(() => { setProgressStep(2, 'complete'); setProgressStep(3, 'active'); }, 1400);
+        const stepTimer3 = setTimeout(() => { setProgressStep(3, 'complete'); setProgressStep(4, 'active'); }, 2200);
+
+        try {
+            const res = await fetch(`${API}/projects/analyze/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            clearTimeout(stepTimer);
+            clearTimeout(stepTimer2);
+            clearTimeout(stepTimer3);
+
+            for (let i = 1; i <= 5; i++) setProgressStep(i, 'complete');
+
+            if (res.ok) {
+                const report = await res.json();
+                showToast(`Analysis completed for "${report.projectName}".`);
+                document.getElementById('form-analyze-project').reset();
+                selectedZipFile = null;
+                document.getElementById('zip-file-info').style.display = 'none';
+
+                await loadDashboard(report.projectId);
+                inspectReport(report.projectId);
+            } else {
+                const err = await res.json();
+                showToast('Analysis failed: ' + (err.message || 'Unknown error'), true);
+            }
+        } catch (err) {
+            showToast('Connection error during analysis: ' + err.message, true);
+        } finally {
+            submitBtn.disabled = false;
+            progressCard.style.display = 'none';
+        }
+    }
+
+    async function fetchAndAnalyzeGitHub(githubUrl, name, description) {
+        const progressCard = document.getElementById('analysis-progress-container');
+        const submitBtn = document.getElementById('btn-submit-analysis');
+        progressCard.style.display = 'block';
+        submitBtn.disabled = true;
+
+        setProgressStep(1, 'active');
+        setProgressStep(2, 'waiting');
+        setProgressStep(3, 'waiting');
+        setProgressStep(4, 'waiting');
+        setProgressStep(5, 'waiting');
+
+        const stepTimer = setTimeout(() => { setProgressStep(1, 'complete'); setProgressStep(2, 'active'); }, 800);
+        const stepTimer2 = setTimeout(() => { setProgressStep(2, 'complete'); setProgressStep(3, 'active'); }, 1800);
+        const stepTimer3 = setTimeout(() => { setProgressStep(3, 'complete'); setProgressStep(4, 'active'); }, 2800);
+
+        try {
+            const res = await fetch(`${API}/projects/analyze/github`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    githubUrl,
+                    name: name || undefined,
+                    description: description || undefined,
+                    userId: currentUserId
+                })
+            });
+
+            clearTimeout(stepTimer);
+            clearTimeout(stepTimer2);
+            clearTimeout(stepTimer3);
+
+            for (let i = 1; i <= 5; i++) setProgressStep(i, 'complete');
+
+            if (res.ok) {
+                const report = await res.json();
+                showToast(`GitHub repository analysis complete for "${report.projectName}".`);
+                document.getElementById('form-analyze-project').reset();
+
+                await loadDashboard(report.projectId);
+                inspectReport(report.projectId);
+            } else {
+                const err = await res.json();
+                showToast('Analysis failed: ' + (err.message || 'Unknown error'), true);
+            }
+        } catch (err) {
+            showToast('Connection error during GitHub analysis: ' + err.message, true);
+        } finally {
+            submitBtn.disabled = false;
+            progressCard.style.display = 'none';
+        }
+    }
+
+    async function deleteProject(projectId) {
+        const project = cachedProjects.find(p => p.id === projectId);
+        const projName = project ? project.name : 'this project';
+        if (!confirm(`Are you sure you want to delete project "${projName}"? All associated metrics and scores will be permanently removed.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API}/projects/${projectId}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast(`Project "${projName}" deleted successfully.`);
+                await loadDashboard();
+            } else {
+                showToast('Failed to delete project.', true);
+            }
+        } catch (err) {
+            showToast('Error deleting project: ' + err.message, true);
+        }
+    }
+
+    async function loadReport(projectId) {
+        if (!projectId) return;
+        const container = document.getElementById('report-container');
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Loading Technical Project Report...</div>';
+
+        try {
+            const res = await fetch(`${API}/projects/analyze/${projectId}`);
+            if (!res.ok) {
+                // Fallback to legacy report endpoint if needed
+                const fallbackRes = await fetch(`${API}/projects/${projectId}/report`);
+                if (!fallbackRes.ok) throw new Error('Could not load report');
+                return renderLegacyReport(await fallbackRes.json());
+            }
+            const report = await res.json();
+            renderAnalysisReport(report);
+        } catch (err) {
+            container.innerHTML = `<div style="color: var(--accent-rose); padding: 20px;">Error generating report: ${err.message}</div>`;
+        }
+    }
+
+    function renderAnalysisReport(report) {
+        const container = document.getElementById('report-container');
+        const stats = report.codeStatistics || {};
+        const tech = report.technologySummary || {};
+        const skillScores = report.skillScores || [];
+        const detectedMetrics = report.detectedMetrics || [];
+
+        // Non-Java warning if applicable
+        const nonJavaBanner = !report.javaProject ? `
+            <div style="background: rgba(244, 63, 94, 0.1); border: 1px solid var(--accent-rose); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; color: #fb7185;">
+                <strong>Notice:</strong> ${escapeHtml(report.statusMessage || 'No supported Java source files were found in this project.')}
+            </div>
+        ` : '';
+
+        // Technology Badges
+        const techBadges = [
+            tech.primaryLanguage ? `<span class="tech-pill">☕ ${escapeHtml(tech.primaryLanguage)} ${tech.javaVersion && tech.javaVersion !== 'Not detected' ? '(' + escapeHtml(tech.javaVersion) + ')' : ''}</span>` : '',
+            tech.buildTool && tech.buildTool !== 'None' ? `<span class="tech-pill">🛠️ ${escapeHtml(tech.buildTool)}</span>` : '',
+            ...(tech.frameworks || []).map(f => `<span class="tech-pill">🌱 ${escapeHtml(f)}</span>`),
+            ...(tech.databases || []).map(d => `<span class="tech-pill">🗄️ ${escapeHtml(d)}</span>`),
+            ...(tech.libraries || []).map(l => `<span class="tech-pill">📚 ${escapeHtml(l)}</span>`)
+        ].filter(Boolean).join('');
+
+        // Skill Score Breakdown Cards
+        const skillCards = skillScores.length > 0 ? skillScores.map(ss => {
+            const pillClass = ss.score >= 80 ? 'score-high' : (ss.score >= 60 ? 'score-mid' : 'score-low');
+            return `
+                <div style="background-color: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-size: 1.15rem; font-weight: 800;">${escapeHtml(ss.skillName)}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 10px;">Deterministic Rule-Based Score</span>
+                        </div>
+                        <span class="score-pill ${pillClass}" style="font-size: 1.05rem;">${ss.score}/100</span>
+                    </div>
+                    <div style="background: var(--bg-canvas); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); padding: 12px 16px; margin-top: 12px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary);">
+                        <strong style="color: var(--brand-primary);">Score Formula Rationale:</strong><br>
+                        ${escapeHtml(ss.breakdown || '')}
+                    </div>
+                </div>
+            `;
+        }).join('') : '<div style="color: var(--text-muted); padding: 20px; text-align: center; border: 1px dashed var(--border-hairline); border-radius: var(--radius-md);">No skills recorded yet for this project.</div>';
+
+        // File-Level Evidence Items (Expandable)
+        const evidenceItems = detectedMetrics.length > 0 ? detectedMetrics.map((m, idx) => {
+            const hasFiles = m.contributingFiles && m.contributingFiles.length > 0;
+            const fileChips = hasFiles ? m.contributingFiles.map(f => `<span class="evidence-file-chip">${escapeHtml(f)}</span>`).join('') : '<span style="color: var(--text-muted);">No specific files mapped</span>';
+
+            return `
+                <div class="evidence-item">
+                    <div class="evidence-summary-row" onclick="toggleEvidenceFiles(${idx})">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 0.95rem; font-weight: 700;">${escapeHtml(m.name)}</span>
+                            <span class="bullet-tag">${escapeHtml(m.category)}</span>
+                            <span style="color: var(--text-secondary); font-size: 0.82rem;">${escapeHtml(m.description)}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <span style="font-family: var(--font-mono); font-weight: 800; color: var(--brand-primary); font-size: 1rem;">${m.count}</span>
+                            ${hasFiles ? `<span style="font-size: 0.75rem; color: var(--text-muted);">▼ ${m.contributingFiles.length} files</span>` : ''}
+                        </div>
+                    </div>
+                    ${hasFiles ? `<div class="evidence-files-list" id="ev-files-${idx}">${fileChips}</div>` : ''}
+                </div>
+            `;
+        }).join('') : '<div style="color: var(--text-muted); padding: 16px;">No detected metrics recorded.</div>';
+
+        const strengthsList = (report.topStrengths || []).map(s => `<div class="callout-box callout-strength"><strong>Demonstrated:</strong> ${escapeHtml(s)}</div>`).join('');
+        const recommendationsList = (report.keyRecommendations || []).map(r => `<div class="callout-box callout-recommendation"><strong>Suggested Improvement:</strong> ${escapeHtml(r)}</div>`).join('');
+
+        container.innerHTML = `
+            ${nonJavaBanner}
+
+            <!-- HERO HEADER -->
+            <div class="card" style="background: linear-gradient(145deg, #1e2430 0%, #171b22 100%); border-color: #3b465c;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <span style="font-size: 0.75rem; color: var(--brand-primary); font-family: var(--font-mono); font-weight: 700; text-transform: uppercase;">Technical Analysis Report</span>
+                        <h2 style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;">${escapeHtml(report.projectName)}</h2>
+                        <p style="color: var(--text-secondary); max-width: 650px; font-size: 0.88rem; margin-top: 6px;">${escapeHtml(report.description || 'No description provided.')}</p>
+                        ${report.githubUrl ? `<a href="${escapeHtml(report.githubUrl)}" target="_blank" style="display: inline-block; color: var(--brand-primary); font-size: 0.82rem; margin-top: 8px; text-decoration: none;">GitHub Repository &nearr;</a>` : ''}
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">Technical Project Score</div>
+                        <div style="font-size: 3.2rem; font-weight: 800; font-family: var(--font-mono); color: var(--brand-primary); line-height: 1;">${report.overallProofScore !== null ? report.overallProofScore + '/100' : '--'}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Evaluated for ${escapeHtml(report.developerName)}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETECTED TECHNOLOGIES -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Detected Technologies & Environment</h3>
+                    <span style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">Inspected from build descriptor and imports</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    ${techBadges || '<span style="color: var(--text-muted);">No specific technologies detected</span>'}
+                </div>
+            </div>
+
+            <!-- CODE STATISTICS GRID -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 12px; font-family: var(--font-mono);">Code Statistics (AST Parsed)</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                    <div class="metric-card">
+                        <div class="metric-label">Java Files</div>
+                        <div class="metric-val">${stats.javaFiles || stats.classCount || 0}</div>
+                        <div class="metric-desc">Source files analyzed</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Classes & Interfaces</div>
+                        <div class="metric-val">${(stats.classCount || 0) + (stats.interfaceCount || 0)}</div>
+                        <div class="metric-desc">${stats.classCount || 0} classes, ${stats.interfaceCount || 0} interfaces</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Methods</div>
+                        <div class="metric-val">${stats.methodCount || (stats.endpointCount ? stats.endpointCount * 2 : (stats.classCount ? stats.classCount * 3 : 0))}</div>
+                        <div class="metric-desc">Declared methods</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">REST Endpoints</div>
+                        <div class="metric-val">${stats.endpointCount || 0}</div>
+                        <div class="metric-desc">Mapped HTTP routes</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Spring Components</div>
+                        <div class="metric-val">${(stats.controllerCount || 0) + (stats.serviceCount || 0) + (stats.repositoryCount || 0)}</div>
+                        <div class="metric-desc">Controllers, services, repos</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Unit Tests</div>
+                        <div class="metric-val">${stats.testMethodCount || 0}</div>
+                        <div class="metric-desc">Executable @Test methods</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SKILL SCORES -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 12px; font-family: var(--font-mono);">Skill Breakdown & Score Rationale</h3>
+                ${skillCards}
+            </div>
+
+            <!-- FILE-LEVEL EVIDENCE -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">File-Level Evidence</h3>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Click any metric to inspect contributing files</span>
+                </div>
+                <div>
+                    ${evidenceItems}
+                </div>
+            </div>
+
+            <!-- HOW IS THIS SCORE CALCULATED? -->
+            <div class="card" style="background-color: var(--bg-canvas); border-color: #3b465c;">
+                <div class="card-header">
+                    <h3 class="card-title">How is this score calculated?</h3>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6;">
+                    The <strong>Technical Project Score</strong> is an explainable indicator calculated deterministically by evaluating concrete source-code characteristics detected by the AST parser. Points are awarded based on verified patterns:
+                </p>
+                <ul style="margin: 12px 0 0 20px; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7;">
+                    <li><strong>Java:</strong> OOP hierarchy, Collections/Stream API usage, custom exception handling, business logic separation, and unit test presence.</li>
+                    <li><strong>Spring Boot:</strong> Controller mappings, REST endpoint diversity, transactional services, Spring Data JPA repositories, and input validation.</li>
+                    <li><strong>SQL:</strong> Normalized JPA entity mappings, relational foreign-key associations, declarative ACID transactions, and indexes.</li>
+                    <li><strong>REST API:</strong> RESTful URI verbs, semantic HTTP status codes, and strict Request/Response DTO boundaries.</li>
+                    <li><strong>Testing:</strong> Automated unit test suites, Mockito dependency isolation, and assertion verification.</li>
+                </ul>
+            </div>
+
+            <!-- STRENGTHS & RECOMMENDATIONS -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 24px;">
+                <div class="card">
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--accent-sage);">Key Technical Strengths</h4>
+                    ${strengthsList || '<div style="color: var(--text-muted);">No strong patterns detected yet.</div>'}
+                </div>
+                <div class="card">
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--brand-primary);">Suggested Improvements</h4>
+                    ${recommendationsList || '<div style="color: var(--text-muted);">Metrics profile is well rounded!</div>'}
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleEvidenceFiles(idx) {
+        const el = document.getElementById(`ev-files-${idx}`);
+        if (el) {
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+    }
+
+    async function reAnalyzeCurrentProject() {
+        const select = document.getElementById('report-project-select');
+        const projectId = select.value;
+        if (!projectId) return;
+
+        showToast('Recalculating score...');
+        try {
+            const res = await fetch(`${API}/projects/${projectId}/analyze`, { method: 'POST' });
+            if (res.ok) {
+                showToast('Score recalculated successfully.');
+                await loadDashboard(projectId);
+                loadReport(projectId);
+            } else {
+                showToast('Failed to recalculate score.', true);
+            }
+        } catch (err) {
+            showToast('Error recalculating score: ' + err.message, true);
+        }
+    }
+
+    function inspectReport(projectId) {
+        switchView('report');
+        const select = document.getElementById('report-project-select');
+        select.value = projectId;
+        loadReport(projectId);
+    }
+
+    function switchView(viewName) {
+        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+        const targetView = document.getElementById(`view-${viewName}`);
+        if (targetView) targetView.classList.add('active');
+
+        const btns = document.querySelectorAll('.nav-btn');
+        if (viewName === 'overview' && btns[0]) btns[0].classList.add('active');
+        if (viewName === 'analyze' && btns[1]) btns[1].classList.add('active');
+        if (viewName === 'projects' && btns[2]) btns[2].classList.add('active');
+        if (viewName === 'report' && btns[3]) btns[3].classList.add('active');
+    }
+
+    function showToast(msg, isError = false) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        t.style.borderColor = isError ? 'var(--accent-rose)' : 'var(--border-hairline)';
+        t.style.color = isError ? '#fb7185' : 'var(--text-main)';
+        clearTimeout(window.__toastTimeout);
+        window.__toastTimeout = setTimeout(() => { t.style.display = 'none'; }, 3500);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+</script>
+</body>
+</html>

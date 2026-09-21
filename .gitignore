@@ -1,0 +1,45 @@
+# Build output
+target/
+**/target/
+build/
+**/build/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.settings/
+.project
+.classpath
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
+
+# Maven wrapper jar
+.mvn/wrapper/maven-wrapper.jar
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Temporary / scratch / log files
+*.log
+scratch_*.txt
+app_run_opts.txt
+*.tmp
+
+# Local study notes & interview prep
+INTERVIEW_MASTER_GUIDE.md
+**/INTERVIEW_MASTER_GUIDE.md
+*_GUIDE*.md
+NOTES_*.md
+
+# Local helper scripts
+run.bat
+run.ps1
+**/run.bat
+**/run.ps1
+
+# Operating System files
+Thumbs.db
+.DS_Store
